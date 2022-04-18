@@ -12,6 +12,7 @@ class Neuron:
 
         if self.neuron_type == 2:
             out[self.action_index] = self.energy
+            self.energy = 0
 
         elif self.neuron_type == 1:
             self.energy = args[self.sensory_index]

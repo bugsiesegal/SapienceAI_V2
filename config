@@ -52,7 +52,7 @@ enabled_mutate_rate     = 0.0
 
 # neuron add/remove rates
 neuron_add_prob           = 0.1
-neuron_delete_prob        = 0.01
+neuron_delete_prob        = 0.1
 
 # network parameters
 num_inputs              = 2
