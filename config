@@ -21,19 +21,19 @@ sensory_index_mutate_rate  = 0
 sensory_index_options      = 0 1
 
 # component weight options
-weight_init_mean          = 4.0
+weight_init_mean          = 1.0
 weight_init_stdev         = 0.1
-weight_max_value          = 100.0
-weight_min_value          = -100.0
+weight_max_value          = 10.0
+weight_min_value          = -10.0
 weight_mutate_power       = 0.1
 weight_mutate_rate        = 0.8
 weight_replace_rate       = 0.1
 
 # component activation_potential options
-activation_potential_init_mean          = 4.0
+activation_potential_init_mean          = 0.0
 activation_potential_init_stdev         = 0.1
-activation_potential_max_value          = 100.0
-activation_potential_min_value          = -100.0
+activation_potential_max_value          = 10.0
+activation_potential_min_value          = -10.0
 activation_potential_mutate_power       = 0.1
 activation_potential_mutate_rate        = 0.8
 activation_potential_replace_rate       = 0.1
@@ -48,18 +48,18 @@ axon_delete_prob        = 0.2
 
 # axon enable options
 enabled_default         = True
-enabled_mutate_rate     = 0.02
+enabled_mutate_rate     = 0.0
 
 # neuron add/remove rates
 neuron_add_prob           = 0.1
-neuron_delete_prob        = 0.1
+neuron_delete_prob        = 0.01
 
 # network parameters
 num_inputs              = 2
 num_outputs             = 1
 
 [DefaultSpeciesSet]
-compatibility_threshold = 2.0
+compatibility_threshold = 1.0
 
 [DefaultStagnation]
 species_fitness_func = max

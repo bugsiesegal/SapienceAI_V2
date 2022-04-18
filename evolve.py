@@ -1,5 +1,5 @@
 import os
-from itertools import chain
+from itertools import chain, product
 from random import random, choice
 
 import neat
@@ -132,6 +132,8 @@ class BrainGenome:
             ng2 = parent2_set.get(key)
             assert key not in self.neurons
             if ng2 is None:
+                self.neurons[key] = ng1.copy()
+            elif ng2.key != ng1.key:
                 self.neurons[key] = ng1.copy()
             else:
                 self.neurons[key] = ng1.crossover(ng2)
@@ -266,9 +268,25 @@ class BrainGenome:
             self.neurons[neuron_key] = neuron
 
     def configure_new(self, config):
-        for neuron_key in chain(config.input_keys, config.output_keys):
-            neuron = NeuronGene(neuron_key)
-            self.neurons[neuron_key] = NeuronGene(neuron_key)
+        for input_neuron_key in config.input_keys:
+            self.neurons[input_neuron_key] = NeuronGene(key=0)
+            self.neurons[input_neuron_key].init_attributes(config)
+            self.neurons[input_neuron_key].__setattr__('action_index', '0')
+            self.neurons[input_neuron_key].__setattr__('sensory_index', str(input_neuron_key))
+            self.neurons[input_neuron_key].__setattr__('neuron_type', '1')
+
+        for output_neuron_key in config.output_keys:
+            self.neurons[output_neuron_key] = NeuronGene(key=0)
+            self.neurons[output_neuron_key].init_attributes(config)
+            self.neurons[output_neuron_key].__setattr__('action_index', '0')
+            self.neurons[output_neuron_key].__setattr__('sensory_index', str(input_neuron_key))
+            self.neurons[output_neuron_key].__setattr__('neuron_type', '2')
+
+
+        for ia, oa in product(config.input_keys, config.output_keys):
+            self.axons[(ia, oa)] = AxonGene((ia, oa))
+            self.axons[(ia, oa)].init_attributes(config)
+
 
     @staticmethod
     def create_neuron(config, neuron_id):
@@ -292,9 +310,8 @@ def create_brain(genome, config) -> Brain:
         brain.add_neuron(neuron)
         neurons[key] = neuron
 
-    for key, n in iteritems(genome.axons):
-        if key[0] > 0 and key[1] > 0:
-            brain.add_axon(Axon(neurons[key[0]], neurons[key[1]], n.activation_potential, n.weight))
+    for key, a in iteritems(genome.axons):
+            brain.add_axon(Axon(neurons[a.key[0]], neurons[a.key[1]], a.activation_potential, a.weight))
 
     return brain
 
@@ -308,6 +325,7 @@ def eval_genomes(genomes, config):
             out = []
             for i in range(20):
                 out = brain.step(xi)
+
             genome.fitness -= (out[0] - xo[0])**2
 
 
@@ -327,20 +345,20 @@ def run(config_file):
     p.add_reporter(neat.Checkpointer(5))
 
     # Run for up to 300 generations.
-    winner = p.run(eval_genomes, 20)
+    winner = p.run(eval_genomes, 200)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
 
-    xor_inputs = [(0.0, 1.0), (1.0, 0.0)]
-    xor_outputs = [(1.0,), (1.0,)]
+    xor_inputs = [(0.0,0.0),(0.0, 1.0), (1.0, 0.0), (1.0,1.0)]
+    xor_outputs = [(0.0), (1.0,), (1.0,),(1.0)]
 
     # Show output of the most fit genome against training data.
     print('\nOutput:')
     winner_net = create_brain(winner, config)
     for xi, xo in zip(xor_inputs, xor_outputs):
         output = None
-        for i in range(20):
+        for i in range(5):
             output = winner_net.step(xi)
         print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
 
