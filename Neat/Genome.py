@@ -235,19 +235,19 @@ class BrainGenome:
             self.neurons[0].init_attributes(config)
             self.neurons[0].__setattr__('action_index', '0')
             self.neurons[0].__setattr__('sensory_index', str(0))
-            self.neurons[0].__setattr__('neuron_type', '1')
+            self.neurons[0].__setattr__('neuron_type', '2')
 
             self.neurons[1] = NeuronGene(key=0)
             self.neurons[1].init_attributes(config)
             self.neurons[1].__setattr__('action_index', '0')
-            self.neurons[1].__setattr__('sensory_index', str(1))
-            self.neurons[1].__setattr__('neuron_type', '2')
+            self.neurons[1].__setattr__('sensory_index', str(0))
+            self.neurons[1].__setattr__('neuron_type', '1')
 
             self.neurons[2] = NeuronGene(key=0)
             self.neurons[2].init_attributes(config)
             self.neurons[2].__setattr__('action_index', '0')
-            self.neurons[2].__setattr__('sensory_index', str(2))
-            self.neurons[2].__setattr__('neuron_type', '2')
+            self.neurons[2].__setattr__('sensory_index', str(1))
+            self.neurons[2].__setattr__('neuron_type', '1')
 
             self.neurons[3] = NeuronGene(key=0)
             self.neurons[3].init_attributes(config)
@@ -265,7 +265,7 @@ class BrainGenome:
             self.neurons[5].init_attributes(config)
             self.neurons[5].__setattr__('action_index', '0')
             self.neurons[5].__setattr__('sensory_index', '0')
-            self.neurons[5].__setattr__('neuron_type', '2')
+            self.neurons[5].__setattr__('neuron_type', '0')
 
             self.axons[(1, 3)] = AxonGene((1, 3))
             self.axons[(1, 3)].init_attributes(config)
@@ -293,7 +293,7 @@ class BrainGenome:
 
             self.axons[(3, 5)] = AxonGene((3, 5))
             self.axons[(3, 5)].init_attributes(config)
-            self.axons[(3, 5)].__setattr__('weight', 1)
+            self.axons[(3, 5)].__setattr__('weight', -1)
             self.axons[(3, 5)].__setattr__('activation_potential', 2)
             self.axons[(2, 3)].__setattr__('enabled', True)
 
@@ -306,7 +306,7 @@ class BrainGenome:
             self.axons[(5, 0)] = AxonGene((5, 0))
             self.axons[(5, 0)].init_attributes(config)
             self.axons[(5, 0)].__setattr__('weight', 1)
-            self.axons[(5, 0)].__setattr__('activation_potential', 2)
+            self.axons[(5, 0)].__setattr__('activation_potential', 1)
             self.axons[(2, 3)].__setattr__('enabled', True)
 
         else:

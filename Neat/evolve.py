@@ -32,13 +32,9 @@ def eval_genomes(genomes, config):
         brain = create_brain(genome, config)
         genome.fitness = 4.0
         for xi, xo in zip(xor_inputs, xor_outputs):
-            print(xi)
             # Number of Propagations
-            for i in range(7):
+            for i in range(20):
                 brain.step(xi)
-
-            if brain.step(xi)[0] == xo[0]:
-                print(brain.step(xi))
 
             genome.fitness -= (brain.step(xi)[0] - xo[0]) ** 2
 
@@ -59,7 +55,7 @@ def run(config_file):
     p.add_reporter(neat.Checkpointer(5))
 
     # Run for up to 300 generations.
-    winner = p.run(eval_genomes, 20)
+    winner = p.run(eval_genomes, 100)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
@@ -72,7 +68,7 @@ def run(config_file):
     winner_net = create_brain(winner, config)
     for xi, xo in zip(xor_inputs, xor_outputs):
         output = None
-        for i in range(7):
+        for i in range(20):
             output = winner_net.step(xi)
         print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
 
