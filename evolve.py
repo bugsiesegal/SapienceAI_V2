@@ -70,7 +70,7 @@ class BrainGenomeConfig:
             # By convention, input pins have negative keys, and the output
             # pins have keys 0,1,...
         self.input_keys = [i for i in range(self.num_inputs)]
-        self.output_keys = [self.num_inputs+i for i in range(self.num_outputs)]
+        self.output_keys = [self.num_inputs + i for i in range(self.num_outputs)]
 
     def save(self, f):
         write_pretty_params(f, self, self.__params)
@@ -133,8 +133,6 @@ class BrainGenome:
             assert key not in self.neurons
             if ng2 is None:
                 self.neurons[key] = ng1.copy()
-            elif ng2.key != ng1.key:
-                self.neurons[key] = ng1.copy()
             else:
                 self.neurons[key] = ng1.crossover(ng2)
 
@@ -165,7 +163,6 @@ class BrainGenome:
         axon.init_attributes(config)
         self.axons[key] = axon
 
-
     def mutate_add_axon(self, config):
         possible_outputs = list(iterkeys(self.neurons))
         out_neuron = choice(possible_outputs)
@@ -173,17 +170,23 @@ class BrainGenome:
         possible_inputs = possible_outputs
         in_neuron = choice(possible_inputs)
 
-        if in_neuron == out_neuron:
+        if in_neuron == out_neuron or self.neurons[in_neuron].neuron_type == "2" or self.neurons[
+            out_neuron].neuron_type == "1":
             return
 
         self.add_axon(config, in_neuron, out_neuron)
 
     def mutate_delete_neuron(self, config):
-        available_neurons = [(k, v) for k, v in iteritems(self.neurons) if k not in config.output_keys]
+        available_neurons = [(k, v) for k, v in iteritems(self.neurons) if
+                             k not in config.output_keys or k not in config.input_keys]
+
         if not available_neurons:
             return -1
 
         del_key, del_neuron = choice(available_neurons)
+
+        if del_neuron.neuron_type == "2" or del_neuron.neuron_type == "1":
+            return -1
 
         axons_to_delete = set()
         for k, v in iteritems(self.axons):
@@ -268,25 +271,103 @@ class BrainGenome:
             self.neurons[neuron_key] = neuron
 
     def configure_new(self, config):
-        for input_neuron_key in config.input_keys:
-            self.neurons[input_neuron_key] = NeuronGene(key=0)
-            self.neurons[input_neuron_key].init_attributes(config)
-            self.neurons[input_neuron_key].__setattr__('action_index', '0')
-            self.neurons[input_neuron_key].__setattr__('sensory_index', str(input_neuron_key))
-            self.neurons[input_neuron_key].__setattr__('neuron_type', '1')
+        if random() > 0:
+            self.neurons[0] = NeuronGene(key=0)
+            self.neurons[0].init_attributes(config)
+            self.neurons[0].__setattr__('action_index', '0')
+            self.neurons[0].__setattr__('sensory_index', str(0))
+            self.neurons[0].__setattr__('neuron_type', '1')
 
-        for output_neuron_key in config.output_keys:
-            self.neurons[output_neuron_key] = NeuronGene(key=0)
-            self.neurons[output_neuron_key].init_attributes(config)
-            self.neurons[output_neuron_key].__setattr__('action_index', '0')
-            self.neurons[output_neuron_key].__setattr__('sensory_index', str(input_neuron_key))
-            self.neurons[output_neuron_key].__setattr__('neuron_type', '2')
+            self.neurons[1] = NeuronGene(key=0)
+            self.neurons[1].init_attributes(config)
+            self.neurons[1].__setattr__('action_index', '0')
+            self.neurons[1].__setattr__('sensory_index', str(1))
+            self.neurons[1].__setattr__('neuron_type', '2')
 
+            self.neurons[2] = NeuronGene(key=0)
+            self.neurons[2].init_attributes(config)
+            self.neurons[2].__setattr__('action_index', '0')
+            self.neurons[2].__setattr__('sensory_index', str(2))
+            self.neurons[2].__setattr__('neuron_type', '2')
 
-        for ia, oa in product(config.input_keys, config.output_keys):
-            self.axons[(ia, oa)] = AxonGene((ia, oa))
-            self.axons[(ia, oa)].init_attributes(config)
+            self.neurons[3] = NeuronGene(key=0)
+            self.neurons[3].init_attributes(config)
+            self.neurons[3].__setattr__('action_index', '0')
+            self.neurons[3].__setattr__('sensory_index', '0')
+            self.neurons[3].__setattr__('neuron_type', '0')
 
+            self.neurons[4] = NeuronGene(key=0)
+            self.neurons[4].init_attributes(config)
+            self.neurons[4].__setattr__('action_index', '0')
+            self.neurons[4].__setattr__('sensory_index', '0')
+            self.neurons[4].__setattr__('neuron_type', '0')
+
+            self.neurons[5] = NeuronGene(key=0)
+            self.neurons[5].init_attributes(config)
+            self.neurons[5].__setattr__('action_index', '0')
+            self.neurons[5].__setattr__('sensory_index', '0')
+            self.neurons[5].__setattr__('neuron_type', '2')
+
+            self.axons[(1, 3)] = AxonGene((1, 3))
+            self.axons[(1, 3)].init_attributes(config)
+            self.axons[(1, 3)].__setattr__('weight', 1)
+            self.axons[(1, 3)].__setattr__('activation_potential', 1)
+            self.axons[(1, 3)].__setattr__('enabled', True)
+
+            self.axons[(2, 3)] = AxonGene((2, 3))
+            self.axons[(2, 3)].init_attributes(config)
+            self.axons[(2, 3)].__setattr__('weight', 1)
+            self.axons[(2, 3)].__setattr__('activation_potential', 1)
+            self.axons[(2, 3)].__setattr__('enabled', True)
+
+            self.axons[(1, 4)] = AxonGene((1, 4))
+            self.axons[(1, 4)].init_attributes(config)
+            self.axons[(1, 4)].__setattr__('weight', 1)
+            self.axons[(1, 4)].__setattr__('activation_potential', 1)
+            self.axons[(2, 3)].__setattr__('enabled', True)
+
+            self.axons[(2, 4)] = AxonGene((2, 4))
+            self.axons[(2, 4)].init_attributes(config)
+            self.axons[(2, 4)].__setattr__('weight', 1)
+            self.axons[(2, 4)].__setattr__('activation_potential', 1)
+            self.axons[(2, 3)].__setattr__('enabled', True)
+
+            self.axons[(3, 5)] = AxonGene((3, 5))
+            self.axons[(3, 5)].init_attributes(config)
+            self.axons[(3, 5)].__setattr__('weight', 1)
+            self.axons[(3, 5)].__setattr__('activation_potential', 2)
+            self.axons[(2, 3)].__setattr__('enabled', True)
+
+            self.axons[(4, 5)] = AxonGene((4, 5))
+            self.axons[(4, 5)].init_attributes(config)
+            self.axons[(4, 5)].__setattr__('weight', 1)
+            self.axons[(4, 5)].__setattr__('activation_potential', 1)
+            self.axons[(2, 3)].__setattr__('enabled', True)
+
+            self.axons[(5, 0)] = AxonGene((5, 0))
+            self.axons[(5, 0)].init_attributes(config)
+            self.axons[(5, 0)].__setattr__('weight', 1)
+            self.axons[(5, 0)].__setattr__('activation_potential', 2)
+            self.axons[(2, 3)].__setattr__('enabled', True)
+
+        else:
+            for input_neuron_key in config.input_keys:
+                self.neurons[input_neuron_key] = NeuronGene(key=0)
+                self.neurons[input_neuron_key].init_attributes(config)
+                self.neurons[input_neuron_key].__setattr__('action_index', '0')
+                self.neurons[input_neuron_key].__setattr__('sensory_index', str(input_neuron_key))
+                self.neurons[input_neuron_key].__setattr__('neuron_type', '1')
+
+            for output_neuron_key in config.output_keys:
+                self.neurons[output_neuron_key] = NeuronGene(key=0)
+                self.neurons[output_neuron_key].init_attributes(config)
+                self.neurons[output_neuron_key].__setattr__('action_index', '0')
+                self.neurons[output_neuron_key].__setattr__('sensory_index', str(input_neuron_key))
+                self.neurons[output_neuron_key].__setattr__('neuron_type', '2')
+
+            for ia, oa in product(config.input_keys, config.output_keys):
+                self.axons[(ia, oa)] = AxonGene((ia, oa))
+                self.axons[(ia, oa)].init_attributes(config)
 
     @staticmethod
     def create_neuron(config, neuron_id):
@@ -311,22 +392,28 @@ def create_brain(genome, config) -> Brain:
         neurons[key] = neuron
 
     for key, a in iteritems(genome.axons):
+        if a.enabled:
             brain.add_axon(Axon(neurons[a.key[0]], neurons[a.key[1]], a.activation_potential, a.weight))
 
     return brain
+
 
 def eval_genomes(genomes, config):
     xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
     xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
     for genome_id, genome in genomes:
         brain = create_brain(genome, config)
-        genome.fitness = 0
+        genome.fitness = 4.0
         for xi, xo in zip(xor_inputs, xor_outputs):
-            out = []
-            for i in range(20):
-                out = brain.step(xi)
+            print(xi)
+            # Number of Propagations
+            for i in range(7):
+                brain.step(xi)
 
-            genome.fitness -= (out[0] - xo[0])**2
+            if brain.step(xi)[0] == xo[0]:
+                print(brain.step(xi))
+
+            genome.fitness -= (brain.step(xi)[0] - xo[0]) ** 2
 
 
 def run(config_file):
@@ -345,25 +432,25 @@ def run(config_file):
     p.add_reporter(neat.Checkpointer(5))
 
     # Run for up to 300 generations.
-    winner = p.run(eval_genomes, 200)
+    winner = p.run(eval_genomes, 20)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
 
-    xor_inputs = [(0.0,0.0),(0.0, 1.0), (1.0, 0.0), (1.0,1.0)]
-    xor_outputs = [(0.0), (1.0,), (1.0,),(1.0)]
+    xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
+    xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
 
     # Show output of the most fit genome against training data.
     print('\nOutput:')
     winner_net = create_brain(winner, config)
     for xi, xo in zip(xor_inputs, xor_outputs):
         output = None
-        for i in range(5):
+        for i in range(7):
             output = winner_net.step(xi)
         print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
 
-    p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
-    p.run(eval_genomes, 10)
+    # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
+    # p.run(eval_genomes, 10)
 
 
 if __name__ == '__main__':
@@ -373,4 +460,3 @@ if __name__ == '__main__':
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, 'config')
     run(config_path)
-

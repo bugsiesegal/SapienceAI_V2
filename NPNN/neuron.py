@@ -7,7 +7,7 @@ class Neuron:
 
         self.energy = 0
 
-    def step(self, *args):
+    def step(self, input_array):
         out = [0 for i in range(self.output_length)]
 
         if self.neuron_type == 2:
@@ -15,7 +15,7 @@ class Neuron:
             self.energy = 0
 
         elif self.neuron_type == 1:
-            self.energy = args[self.sensory_index]
+            self.energy = input_array[self.sensory_index]
 
         else:
             self.energy = 0
