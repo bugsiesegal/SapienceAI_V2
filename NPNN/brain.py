@@ -30,14 +30,15 @@ class Brain:
         return output_array
 
     def plot(self) -> None:
-        df = pd.DataFrame(columns=["Input", "Output", "Potential", "Weight"])
+        df = pd.DataFrame(columns=["Input", "Output", "InpNeuron", "Weight"])
 
         fig, ax = plt.subplots(figsize=(15, 8))
 
         for axon in self.axons:
-            df.loc[len(df.index)] = [int(id(axon.input_neuron)), int(id(axon.output_neuron)), axon.activation_potential, axon.weight]
+            df.loc[len(df.index)] = [int(id(axon.input_neuron)), int(id(axon.output_neuron)), axon.input_neuron.neuron_type, axon.output_neuron.neuron_type]
 
         print(df)
+
         G = nx.from_pandas_edgelist(df, source="Input", target="Output", create_using=nx.Graph())
         nx.draw(G)
         fig.show()

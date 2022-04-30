@@ -129,8 +129,7 @@ class BrainGenome:
         possible_inputs = possible_outputs
         in_neuron = choice(possible_inputs)
 
-        if in_neuron == out_neuron or self.neurons[in_neuron].neuron_type == "2" or self.neurons[
-            out_neuron].neuron_type == "1":
+        if in_neuron == out_neuron:
             return
 
         self.add_axon(config, in_neuron, out_neuron)
@@ -230,7 +229,7 @@ class BrainGenome:
             self.neurons[neuron_key] = neuron
 
     def configure_new(self, config):
-        if random() > 0:
+        if random() > 1:
             self.neurons[0] = NeuronGene(key=0)
             self.neurons[0].init_attributes(config)
             self.neurons[0].__setattr__('action_index', '0')
