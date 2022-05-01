@@ -1,6 +1,4 @@
-from typing import Dict
-
-from NPNN.neuron import Neuron
+from .neuron import Neuron
 
 
 class Axon:

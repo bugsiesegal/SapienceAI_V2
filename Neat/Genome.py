@@ -4,7 +4,7 @@ from random import random, choice
 from neat.config import ConfigParameter, write_pretty_params
 from neat.six_util import iteritems, iterkeys
 
-from Neat.Genes import NeuronGene, AxonGene
+from Genes import NeuronGene, AxonGene
 
 
 class BrainGenomeConfig:

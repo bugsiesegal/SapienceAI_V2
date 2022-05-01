@@ -1,71 +1,53 @@
 [NEAT]
-fitness_criterion     = max
-fitness_threshold     = -0.001
-pop_size              = 500
-reset_on_extinction   = False
+fitness_criterion = max
+fitness_threshold = -0.001
+pop_size = 500
+reset_on_extinction = False
 
 [BrainGenome]
-# component type options
-neuron_type_default      = 0
-neuron_type_mutate_rate  = 0
-neuron_type_options      = 0 1 2
-
-# component action_index options
-action_index_default      = 0
-action_index_mutate_rate  = 0
-action_index_options      = 0
-
-# component sensory_index options
-sensory_index_default      = 0
-sensory_index_mutate_rate  = 0
-sensory_index_options      = 0 1
-
-# component weight options
-weight_init_mean          = 1.0
-weight_init_stdev         = 0.1
-weight_max_value          = 10.0
-weight_min_value          = -10.0
-weight_mutate_power       = 0.1
-weight_mutate_rate        = 0.3
-weight_replace_rate       = 0.1
-
-# component activation_potential options
-activation_potential_init_mean          = 1.0
-activation_potential_init_stdev         = 0.1
-activation_potential_max_value          = 10.0
-activation_potential_min_value          = -10.0
-activation_potential_mutate_power       = 0.1
-activation_potential_mutate_rate        = 0.3
-activation_potential_replace_rate       = 0.1
-
-# genome compatibility options
-compatibility_disjoint_coefficient = 0.9
-compatibility_weight_coefficient   = 0.2
-
-# axon add/remove rates
-axon_add_prob           = 0.3
-axon_delete_prob        = 0.3
-
-# axon enable options
-enabled_default         = True
-enabled_mutate_rate     = 0.2
-
-# neuron add/remove rates
-neuron_add_prob           = 0.2
-neuron_delete_prob        = 0.2
-
-# network parameters
-num_inputs              = 2
-num_outputs             = 1
+neuron_type_default = 0
+neuron_type_mutate_rate = 0
+neuron_type_options = 0 1 2
+action_index_default = 0
+action_index_mutate_rate = 0
+action_index_options = 0
+sensory_index_default = 0
+sensory_index_mutate_rate = 0
+sensory_index_options = 0 1
+weight_init_mean = 1.0
+weight_init_stdev = 1.0
+weight_max_value = 10.0
+weight_min_value = -10.0
+weight_mutate_power = 0.2071850365563341
+weight_mutate_rate = 0.3
+weight_replace_rate = 0.1
+activation_potential_init_mean = 1.0
+activation_potential_init_stdev = 1.0
+activation_potential_max_value = 10.0
+activation_potential_min_value = -10.0
+activation_potential_mutate_power = 1.358122952234733
+activation_potential_mutate_rate = 0.3
+activation_potential_replace_rate = 0.1
+compatibility_disjoint_coefficient = 0.7237675575355084
+compatibility_weight_coefficient = 2.895802138504615
+axon_add_prob = 0.3
+axon_delete_prob = 0.3
+enabled_default = True
+enabled_mutate_rate = 0.2
+neuron_add_prob = 0.2
+neuron_delete_prob = 0.2
+num_inputs = 2
+num_outputs = 1
 
 [DefaultSpeciesSet]
-compatibility_threshold = 1.75
+compatibility_threshold = 5.784285779419496
 
 [DefaultStagnation]
 species_fitness_func = max
-max_stagnation       = 15
-species_elitism      = 1
+max_stagnation = 15
+species_elitism = 1
 
 [DefaultReproduction]
-elitism            = 1
-survival_threshold = 0.15
+elitism = 1
+survival_threshold = 0.695829920513272
+
