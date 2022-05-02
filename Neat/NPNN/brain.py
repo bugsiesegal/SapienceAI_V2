@@ -1,8 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
+from neat.six_util import iteritems
 from pyvis.network import Network
 import pandas as pd
+
+from NPNN.axon import Axon
+from NPNN.neuron import Neuron
+
 
 class Brain:
     def __init__(self):
@@ -43,3 +48,17 @@ class Brain:
         nx.draw(G)
         fig.show()
 
+def create_brain(genome, config) -> Brain:
+    brain = Brain()
+    neurons = {}
+
+    for key, n in iteritems(genome.neurons):
+        neuron = Neuron(config.genome_config.num_outputs, n.neuron_type, n.action_index, n.sensory_index)
+        brain.add_neuron(neuron)
+        neurons[key] = neuron
+
+    for key, a in iteritems(genome.axons):
+        if a.enabled:
+            brain.add_axon(Axon(neurons[a.key[0]], neurons[a.key[1]], a.activation_potential, a.weight))
+
+    return brain

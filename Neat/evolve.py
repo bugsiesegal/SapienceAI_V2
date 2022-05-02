@@ -1,4 +1,5 @@
 import configparser
+import multiprocessing
 import os
 
 import neat
@@ -6,7 +7,7 @@ import wandb
 from neat.six_util import iteritems
 
 from NPNN.axon import Axon
-from NPNN.brain import Brain
+from NPNN.brain import Brain, create_brain
 from NPNN.neuron import Neuron
 from Genome import BrainGenome
 
@@ -16,35 +17,10 @@ from neat.math_util import mean, stdev
 from neat.reporting import BaseReporter
 from neat.six_util import itervalues, iterkeys
 
-
-def create_brain(genome, config) -> Brain:
-    brain = Brain()
-    neurons = {}
-
-    for key, n in iteritems(genome.neurons):
-        neuron = Neuron(config.genome_config.num_outputs, n.neuron_type, n.action_index, n.sensory_index)
-        brain.add_neuron(neuron)
-        neurons[key] = neuron
-
-    for key, a in iteritems(genome.axons):
-        if a.enabled:
-            brain.add_axon(Axon(neurons[a.key[0]], neurons[a.key[1]], a.activation_potential, a.weight))
-
-    return brain
+import GenomeEvaluator
 
 
-def eval_genomes(genomes, config):
-    xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
-    xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
-    for genome_id, genome in genomes:
-        brain = create_brain(genome, config)
-        genome.fitness = 0.0
-        for xi, xo in zip(xor_inputs, xor_outputs):
-            # Number of Propagations
-            for i in range(8):
-                brain.step(xi)
 
-            genome.fitness -= ((abs(brain.step(xi)[0] - xo[0])) ** 2)
 
 
 class WandbStdOutReporter(BaseReporter):
@@ -145,7 +121,8 @@ def run(config_file):
     p.add_reporter(neat.Checkpointer(20))
 
     # Run for up to 300 generations.
-    winner = p.run(eval_genomes, 200)
+    pe = GenomeEvaluator.ParallelEvaluator(multiprocessing.cpu_count(), eval_function)
+    winner = p.run(pe.eval_genomes, 200)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
@@ -183,6 +160,21 @@ def param_tuning(config_path):
 
     with open(config_path, "w") as config_file:
         configparse.write(config_file)
+
+
+def eval_function(genome, config):
+    xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
+    xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
+    brain = create_brain(genome, config)
+    fitness = 0.0
+    for xi, xo in zip(xor_inputs, xor_outputs):
+        # Number of Propagations
+        for i in range(8):
+            brain.step(xi)
+
+        fitness -= ((abs(brain.step(xi)[0] - xo[0])) ** 2)
+
+    return fitness
 
 
 if __name__ == '__main__':
