@@ -65,6 +65,9 @@ class WandbStdOutReporter(BaseReporter):
     def end_generation(self, config, population, species_set):
         ng = len(population)
         ns = len(species_set.species)
+
+        wandb.log({"number_species": ns})
+
         if self.show_species_detail:
             print('Population of {0:d} members in {1:d} species:'.format(ng, ns))
             sids = list(iterkeys(species_set.species))
@@ -106,7 +109,9 @@ class WandbStdOutReporter(BaseReporter):
                                                                                  best_species_id,
                                                                                  best_genome.key))
 
-        wandb.log({"loss": fit_mean})
+        wandb.log({"best_fitness": best_genome.fitness,
+                   "average_fitness": fit_mean,
+                   })
 
     def complete_extinction(self):
         self.num_extinctions += 1
@@ -140,7 +145,7 @@ def run(config_file):
     p.add_reporter(neat.Checkpointer(20))
 
     # Run for up to 300 generations.
-    winner = p.run(eval_genomes, 60)
+    winner = p.run(eval_genomes, 200)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))

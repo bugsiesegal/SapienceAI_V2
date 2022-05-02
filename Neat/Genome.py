@@ -229,103 +229,23 @@ class BrainGenome:
             self.neurons[neuron_key] = neuron
 
     def configure_new(self, config):
-        if random() > 1:
-            self.neurons[0] = NeuronGene(key=0)
-            self.neurons[0].init_attributes(config)
-            self.neurons[0].__setattr__('action_index', '0')
-            self.neurons[0].__setattr__('sensory_index', str(0))
-            self.neurons[0].__setattr__('neuron_type', '2')
+        for input_neuron_key in config.input_keys:
+            self.neurons[input_neuron_key] = NeuronGene(key=0)
+            self.neurons[input_neuron_key].init_attributes(config)
+            self.neurons[input_neuron_key].__setattr__('action_index', '0')
+            self.neurons[input_neuron_key].__setattr__('sensory_index', str(input_neuron_key))
+            self.neurons[input_neuron_key].__setattr__('neuron_type', '1')
 
-            self.neurons[1] = NeuronGene(key=0)
-            self.neurons[1].init_attributes(config)
-            self.neurons[1].__setattr__('action_index', '0')
-            self.neurons[1].__setattr__('sensory_index', str(0))
-            self.neurons[1].__setattr__('neuron_type', '1')
+        for output_neuron_key in config.output_keys:
+            self.neurons[output_neuron_key] = NeuronGene(key=0)
+            self.neurons[output_neuron_key].init_attributes(config)
+            self.neurons[output_neuron_key].__setattr__('action_index', '0')
+            self.neurons[output_neuron_key].__setattr__('sensory_index', str(input_neuron_key))
+            self.neurons[output_neuron_key].__setattr__('neuron_type', '2')
 
-            self.neurons[2] = NeuronGene(key=0)
-            self.neurons[2].init_attributes(config)
-            self.neurons[2].__setattr__('action_index', '0')
-            self.neurons[2].__setattr__('sensory_index', str(1))
-            self.neurons[2].__setattr__('neuron_type', '1')
-
-            self.neurons[3] = NeuronGene(key=0)
-            self.neurons[3].init_attributes(config)
-            self.neurons[3].__setattr__('action_index', '0')
-            self.neurons[3].__setattr__('sensory_index', '0')
-            self.neurons[3].__setattr__('neuron_type', '0')
-
-            self.neurons[4] = NeuronGene(key=0)
-            self.neurons[4].init_attributes(config)
-            self.neurons[4].__setattr__('action_index', '0')
-            self.neurons[4].__setattr__('sensory_index', '0')
-            self.neurons[4].__setattr__('neuron_type', '0')
-
-            self.neurons[5] = NeuronGene(key=0)
-            self.neurons[5].init_attributes(config)
-            self.neurons[5].__setattr__('action_index', '0')
-            self.neurons[5].__setattr__('sensory_index', '0')
-            self.neurons[5].__setattr__('neuron_type', '0')
-
-            self.axons[(1, 3)] = AxonGene((1, 3))
-            self.axons[(1, 3)].init_attributes(config)
-            self.axons[(1, 3)].__setattr__('weight', 1)
-            self.axons[(1, 3)].__setattr__('activation_potential', 1)
-            self.axons[(1, 3)].__setattr__('enabled', True)
-
-            self.axons[(2, 3)] = AxonGene((2, 3))
-            self.axons[(2, 3)].init_attributes(config)
-            self.axons[(2, 3)].__setattr__('weight', 1)
-            self.axons[(2, 3)].__setattr__('activation_potential', 1)
-            self.axons[(2, 3)].__setattr__('enabled', True)
-
-            self.axons[(1, 4)] = AxonGene((1, 4))
-            self.axons[(1, 4)].init_attributes(config)
-            self.axons[(1, 4)].__setattr__('weight', 1)
-            self.axons[(1, 4)].__setattr__('activation_potential', 1)
-            self.axons[(2, 3)].__setattr__('enabled', True)
-
-            self.axons[(2, 4)] = AxonGene((2, 4))
-            self.axons[(2, 4)].init_attributes(config)
-            self.axons[(2, 4)].__setattr__('weight', 1)
-            self.axons[(2, 4)].__setattr__('activation_potential', 1)
-            self.axons[(2, 3)].__setattr__('enabled', True)
-
-            self.axons[(3, 5)] = AxonGene((3, 5))
-            self.axons[(3, 5)].init_attributes(config)
-            self.axons[(3, 5)].__setattr__('weight', -1)
-            self.axons[(3, 5)].__setattr__('activation_potential', 2)
-            self.axons[(2, 3)].__setattr__('enabled', True)
-
-            self.axons[(4, 5)] = AxonGene((4, 5))
-            self.axons[(4, 5)].init_attributes(config)
-            self.axons[(4, 5)].__setattr__('weight', 1)
-            self.axons[(4, 5)].__setattr__('activation_potential', 1)
-            self.axons[(2, 3)].__setattr__('enabled', True)
-
-            self.axons[(5, 0)] = AxonGene((5, 0))
-            self.axons[(5, 0)].init_attributes(config)
-            self.axons[(5, 0)].__setattr__('weight', 1)
-            self.axons[(5, 0)].__setattr__('activation_potential', 1)
-            self.axons[(2, 3)].__setattr__('enabled', True)
-
-        else:
-            for input_neuron_key in config.input_keys:
-                self.neurons[input_neuron_key] = NeuronGene(key=0)
-                self.neurons[input_neuron_key].init_attributes(config)
-                self.neurons[input_neuron_key].__setattr__('action_index', '0')
-                self.neurons[input_neuron_key].__setattr__('sensory_index', str(input_neuron_key))
-                self.neurons[input_neuron_key].__setattr__('neuron_type', '1')
-
-            for output_neuron_key in config.output_keys:
-                self.neurons[output_neuron_key] = NeuronGene(key=0)
-                self.neurons[output_neuron_key].init_attributes(config)
-                self.neurons[output_neuron_key].__setattr__('action_index', '0')
-                self.neurons[output_neuron_key].__setattr__('sensory_index', str(input_neuron_key))
-                self.neurons[output_neuron_key].__setattr__('neuron_type', '2')
-
-            for ia, oa in product(config.input_keys, config.output_keys):
-                self.axons[(ia, oa)] = AxonGene((ia, oa))
-                self.axons[(ia, oa)].init_attributes(config)
+        for ia, oa in product(config.input_keys, config.output_keys):
+            self.axons[(ia, oa)] = AxonGene((ia, oa))
+            self.axons[(ia, oa)].init_attributes(config)
 
     @staticmethod
     def create_neuron(config, neuron_id):
