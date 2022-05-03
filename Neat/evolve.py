@@ -3,6 +3,7 @@ import multiprocessing
 import os
 
 import neat
+import numpy as np
 import wandb
 from neat.six_util import iteritems
 
@@ -19,8 +20,11 @@ from neat.six_util import itervalues, iterkeys
 
 import GenomeEvaluator
 
+import gym
 
 
+def clamp(num, min_value, max_value):
+    return max(min(num, max_value), min_value)
 
 
 class WandbStdOutReporter(BaseReporter):
@@ -41,8 +45,6 @@ class WandbStdOutReporter(BaseReporter):
     def end_generation(self, config, population, species_set):
         ng = len(population)
         ns = len(species_set.species)
-
-        wandb.log({"number_species": ns})
 
         if self.show_species_detail:
             print('Population of {0:d} members in {1:d} species:'.format(ng, ns))
@@ -126,18 +128,6 @@ def run(config_file):
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
 
-    xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
-    xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
-
-    # Show output of the most fit genome against training data.
-    print('\nOutput:')
-    winner_net = create_brain(winner, config)
-    for xi, xo in zip(xor_inputs, xor_outputs):
-        output = None
-        for i in range(20):
-            output = winner_net.step(xi)
-        print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
-
 
 def param_tuning(config_path):
     configparse = configparser.ConfigParser()
@@ -162,16 +152,19 @@ def param_tuning(config_path):
 
 
 def eval_function(genome, config):
-    xor_inputs = [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)]
-    xor_outputs = [(0.0,), (1.0,), (1.0,), (0.0,)]
+    env = gym.make("CartPole-v1")
     brain = create_brain(genome, config)
     fitness = 0.0
-    for xi, xo in zip(xor_inputs, xor_outputs):
-        # Number of Propagations
-        for i in range(8):
-            brain.step(xi)
+    observation, info = env.reset(return_info=True)
+    for _ in range(200):
+        action = int(clamp(brain.step(observation)[0], 0, 1))
+        observation, reward, done, info = env.step(action)
+        fitness += reward
 
-        fitness -= ((abs(brain.step(xi)[0] - xo[0])) ** 2)
+        if done:
+            observation, info = env.reset(return_info=True)
+            break
+    env.close()
 
     return fitness
 
