@@ -86,13 +86,13 @@ class WandbStdOutReporter(BaseReporter):
                                                                                  best_species_id,
                                                                                  best_genome.key))
 
-        env = gym.make("CartPole-v1")
+        env = gym.make("MountainCar-v0")
         brain = create_brain(best_genome, config)
         fitness = 0.0
         observation = env.reset()
         frames = []
-        for _ in range(500):
-            action = int(clamp(brain.step(observation)[0], 0, 1))
+        for _ in range(200):
+            action = int(clamp(brain.step(observation)[0], 0, 2))
             observation, reward, done, info = env.step(action)
             fitness += reward
             frames.append(env.render("rgb_array"))
@@ -177,14 +177,14 @@ def param_tuning(config_path):
 
 
 def eval_function(genome, config):
-    env = gym.make("CartPole-v1")
+    env = gym.make("MountainCar-v0")
     brain = create_brain(genome, config)
     fitness = 0.0
     observation = env.reset()
     for __ in range(20):
-        for _ in range(600):
+        for _ in range(200):
             for ___ in range(3):
-                action = int(clamp(brain.step(observation)[0], 0, 1))
+                action = int(clamp(brain.step(observation)[0], 0, 2))
             observation, reward, done, info = env.step(action)
             fitness += reward
 
