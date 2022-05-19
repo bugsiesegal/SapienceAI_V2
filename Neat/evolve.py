@@ -1,26 +1,22 @@
 import configparser
 import multiprocessing
 import os
-
-import neat
-import numpy as np
-import wandb
-from neat.six_util import iteritems
-
-from NPNN.axon import Axon
-from NPNN.brain import Brain, create_brain
-from NPNN.neuron import Neuron
-from Genome import BrainGenome
-
 import time
 
+import dill
+import gym
+import matplotlib.pyplot as plt
+import neat
+import networkx as nx
+import numpy as np
+import wandb
 from neat.math_util import mean, stdev
 from neat.reporting import BaseReporter
 from neat.six_util import itervalues, iterkeys
 
 import GenomeEvaluator
-
-import gym
+from Genome import BrainGenome
+from NPNN.brain import create_brain
 
 
 def clamp(num, min_value, max_value):
@@ -45,6 +41,9 @@ class WandbStdOutReporter(BaseReporter):
     def end_generation(self, config, population, species_set):
         ng = len(population)
         ns = len(species_set.species)
+
+        if ng > 600:
+            raise ValueError("To large a population.")
 
         if self.show_species_detail:
             print('Population of {0:d} members in {1:d} species:'.format(ng, ns))
@@ -87,9 +86,29 @@ class WandbStdOutReporter(BaseReporter):
                                                                                  best_species_id,
                                                                                  best_genome.key))
 
+        env = gym.make("CartPole-v1")
+        brain = create_brain(best_genome, config)
+        fitness = 0.0
+        observation = env.reset()
+        frames = []
+        for _ in range(500):
+            action = int(clamp(brain.step(observation)[0], 0, 1))
+            observation, reward, done, info = env.step(action)
+            fitness += reward
+            frames.append(env.render("rgb_array"))
+            if done:
+                observation = env.reset()
+                break
+
+        frames = np.swapaxes(np.swapaxes(np.array(frames), 1, 3), 2, 3)
+
+        env.close()
         wandb.log({"best_fitness": best_genome.fitness,
                    "average_fitness": fit_mean,
+                   "video": wandb.Video(frames, fps=30, format="mp4")
                    })
+
+        brain.plot()
 
     def complete_extinction(self):
         self.num_extinctions += 1
@@ -127,6 +146,12 @@ def run(config_file):
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
+    winner_brain = create_brain(winner, config)
+
+    with open("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl", "wb") as f:
+        dill.dump(winner, f)
+    wandb.log_artifact("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl",
+                       name="CartPole", type="model")
 
 
 def param_tuning(config_path):
@@ -155,15 +180,17 @@ def eval_function(genome, config):
     env = gym.make("CartPole-v1")
     brain = create_brain(genome, config)
     fitness = 0.0
-    observation, info = env.reset(return_info=True)
-    for _ in range(200):
-        action = int(clamp(brain.step(observation)[0], 0, 1))
-        observation, reward, done, info = env.step(action)
-        fitness += reward
+    observation = env.reset()
+    for __ in range(20):
+        for _ in range(600):
+            for ___ in range(3):
+                action = int(clamp(brain.step(observation)[0], 0, 1))
+            observation, reward, done, info = env.step(action)
+            fitness += reward
 
-        if done:
-            observation, info = env.reset(return_info=True)
-            break
+            if done:
+                observation = env.reset()
+                break
     env.close()
 
     return fitness
@@ -173,6 +200,7 @@ if __name__ == '__main__':
     # Determine path to configuration file. This path manipulation is
     # here so that the script will run successfully regardless of the
     # current working directory.
+
     local_dir = os.path.dirname(__file__)
     config_path = os.path.join(local_dir, 'config')
 

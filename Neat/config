@@ -1,6 +1,6 @@
 [NEAT]
 fitness_criterion = max
-fitness_threshold = -0.001
+fitness_threshold = 10000.0
 pop_size = 500
 reset_on_extinction = False
 
@@ -18,29 +18,29 @@ weight_init_mean = 1.0
 weight_init_stdev = 1.0
 weight_max_value = 10.0
 weight_min_value = -10.0
-weight_mutate_power = 2.98856995238833
-weight_mutate_rate = 0.941982661824738
-weight_replace_rate = 0.5398671413234633
+weight_mutate_power = 0.01
+weight_mutate_rate = 0.2
+weight_replace_rate = 0.2
 activation_potential_init_mean = 1.0
 activation_potential_init_stdev = 1.0
 activation_potential_max_value = 10.0
 activation_potential_min_value = -10.0
-activation_potential_mutate_power = 0.7473464443519469
-activation_potential_mutate_rate = 0.5137887634497432
-activation_potential_replace_rate = 0.44656069618601896
-compatibility_disjoint_coefficient = 0.4782314234482552
-compatibility_weight_coefficient = 0.6600734770464052
-axon_add_prob = 0.978670253917156
-axon_delete_prob = 0.07821873268925406
+activation_potential_mutate_power = 0.01
+activation_potential_mutate_rate = 0.2
+activation_potential_replace_rate = 0.2
+compatibility_disjoint_coefficient = 1.5
+compatibility_weight_coefficient = 0.5
+axon_add_prob = 0.2
+axon_delete_prob = 0.2
 enabled_default = True
-enabled_mutate_rate = 0.1103763571816845
-neuron_add_prob = 0.26192983938785325
-neuron_delete_prob = 0.4080001810256733
-num_inputs = 2
+enabled_mutate_rate = 0.2
+neuron_add_prob = 0.2
+neuron_delete_prob = 0.2
+num_inputs = 4
 num_outputs = 1
 
 [DefaultSpeciesSet]
-compatibility_threshold = 1.6055321907957256
+compatibility_threshold = 2
 
 [DefaultStagnation]
 species_fitness_func = max
@@ -49,5 +49,5 @@ species_elitism = 1
 
 [DefaultReproduction]
 elitism = 1
-survival_threshold = 0.4356083105270262
+survival_threshold = 0.1
 
