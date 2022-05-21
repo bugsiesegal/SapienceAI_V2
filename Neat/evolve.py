@@ -2,7 +2,7 @@ import configparser
 import multiprocessing
 import os
 import time
-
+from pyvirtualdisplay import Display
 import dill
 import gym
 import matplotlib.pyplot as plt
@@ -86,14 +86,19 @@ class WandbStdOutReporter(BaseReporter):
                                                                                  best_species_id,
                                                                                  best_genome.key))
 
-        env = gym.make("MountainCar-v0")
+        env = gym.make('CartPole-v1')
         brain = create_brain(best_genome, config)
         fitness = 0.0
         observation = env.reset()
+        observation[0] = 0
+        observation[2] = 0
         frames = []
-        for _ in range(200):
-            action = int(clamp(brain.step(observation)[0], 0, 2))
+        for _ in range(500):
+            for ___ in range(6):
+                action = int(clamp(brain.step(observation)[0], 0, 1))
             observation, reward, done, info = env.step(action)
+            observation[0] = 0
+            observation[2] = 0
             fitness += reward
             frames.append(env.render("rgb_array"))
             if done:
@@ -151,7 +156,7 @@ def run(config_file):
     with open("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl", "wb") as f:
         dill.dump(winner, f)
     wandb.log_artifact("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl",
-                       name="CartPole", type="model")
+                       name=wandb.run.name, type="model")
 
 
 def param_tuning(config_path):
@@ -177,15 +182,19 @@ def param_tuning(config_path):
 
 
 def eval_function(genome, config):
-    env = gym.make("MountainCar-v0")
+    env = gym.make('CartPole-v1')
     brain = create_brain(genome, config)
     fitness = 0.0
     observation = env.reset()
+    observation[0] = 0
+    observation[2] = 0
     for __ in range(20):
-        for _ in range(200):
-            for ___ in range(3):
-                action = int(clamp(brain.step(observation)[0], 0, 2))
+        for _ in range(500):
+            for ___ in range(6):
+                action = int(clamp(brain.step(observation)[0], 0, 1))
             observation, reward, done, info = env.step(action)
+            observation[0] = 0
+            observation[2] = 0
             fitness += reward
 
             if done:
@@ -196,7 +205,11 @@ def eval_function(genome, config):
     return fitness
 
 
+
 if __name__ == '__main__':
+    disp = Display()
+
+    disp.start()
     # Determine path to configuration file. This path manipulation is
     # here so that the script will run successfully regardless of the
     # current working directory.
@@ -207,3 +220,5 @@ if __name__ == '__main__':
     param_tuning(config_path)
 
     run(config_path)
+
+    disp.stop()
