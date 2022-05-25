@@ -1,3 +1,4 @@
+from functools import partial
 from multiprocessing import Pool
 
 
@@ -13,9 +14,13 @@ class ParallelEvaluator:
         self.pool.join()
 
     def eval_genomes(self, genomes, config):
-        jobs = []
+        genome_list = []
         for genome_id, genome in genomes:
-            jobs.append(self.pool.apply_async(self.eval_function, (genome, config)))
+            genome_list.append(genome)
 
-        for job, (genome_id, genome) in zip(jobs, genomes):
-            genome.fitness = job.get(timeout=self.timeout)
+        funct = partial(self.eval_function, config=config)
+
+        results = self.pool.map(funct, genome_list)
+
+        for result, (genome_id, genome) in zip(results, genomes):
+            genome.fitness = result

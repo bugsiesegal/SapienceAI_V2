@@ -55,9 +55,11 @@ class Brain:
         G = nx.DiGraph()
 
         nodes = []
+        output_id = None
         for neuron in self.neurons:
             if neuron.neuron_type == 2:
                 nodes.append((neuron.h_id, {"color": "green", "label": "Output: " + str(neuron.h_id)}))
+                output_id = neuron.h_id
             elif neuron.neuron_type == 1:
                 nodes.append((neuron.h_id, {"color": "red", "label": "Input: " + str(neuron.h_id)}))
             else:
@@ -69,20 +71,32 @@ class Brain:
             edges.append((axon.input_neuron.h_id, axon.output_neuron.h_id, {
                 'axon_label': 'Weight: {:.2f}, Potential: {:.2f}'.format(axon.weight, axon.activation_potential)}))
         G.add_edges_from(edges)
+        discluded_nodes = []
+        included_nodes = list(nx.ancestors(G, output_id)) + list(nx.descendants(G, output_id))
+        for node in G.nodes:
+            if node not in included_nodes and node is not output_id:
+                discluded_nodes.append(node)
 
-        pos = nx.spring_layout(G, scale=0.25)
-
+        G.remove_nodes_from(discluded_nodes)
+        pos = nx.spring_layout(G, iterations=200)
         nx.draw(G, pos)
         node_labels = nx.get_node_attributes(G, 'label')
         edge_labels = nx.get_edge_attributes(G, 'axon_label')
         nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=4)
         nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=4)
-        plt.savefig("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Model_Images\\brain-structure.png", dpi=400)
-        plt.show()
 
+        plt.savefig("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Model_Images\\brain-structure.png", dpi=400)
+        plt.clf()
+        plt.cla()
+
+        cycles = nx.recursive_simple_cycles(G)
+        n_cycles = len(cycles)
         wandb.log(
-            {"brain structure": wandb.Image(
-                "C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Model_Images\\brain-structure.png")}
+            {
+                "brain structure": wandb.Image(
+                    "C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Model_Images\\brain-structure.png"),
+                "cycles": n_cycles
+            }, commit=False
         )
 
 

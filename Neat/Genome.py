@@ -246,6 +246,8 @@ class BrainGenome:
         for ia, oa in product(config.input_keys, config.output_keys):
             self.axons[(ia, oa)] = AxonGene((ia, oa))
             self.axons[(ia, oa)].init_attributes(config)
+            self.axons[(oa, ia)] = AxonGene((oa, ia))
+            self.axons[(oa, ia)].init_attributes(config)
 
     @staticmethod
     def create_neuron(config, neuron_id):
