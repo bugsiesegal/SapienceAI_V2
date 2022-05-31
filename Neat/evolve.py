@@ -1,6 +1,7 @@
 import configparser
 import multiprocessing
 import os
+import random
 import time
 from pyvirtualdisplay import Display
 import dill
@@ -45,7 +46,7 @@ class WandbStdOutReporter(BaseReporter):
         ng = len(population)
         ns = len(species_set.species)
 
-        if ng > 1000:
+        if ng > 600:
             raise ValueError("To large a population.")
 
         if self.show_species_detail:
@@ -89,44 +90,43 @@ class WandbStdOutReporter(BaseReporter):
                                                                                  best_species_id,
                                                                                  best_genome.key))
 
-        if self.generation % 10 == 0:
-            env = gym.make('CartPole-v1')
-            brain = create_brain(best_genome, config)
-            fitness = 0.0
-            observation = env.reset()
-            observation[0] = 0
-            observation[2] = 0
-            frames = []
-            for _ in range(500):
-                for ___ in range(20):
-                    action = int(clamp(brain.step(observation)[0], 0, 1))
-                observation, reward, done, info = env.step(action)
-                observation[0] = 0
-                observation[2] = 0
-                fitness += reward
-                frames.append(env.render("rgb_array"))
-                if done:
-                    observation = env.reset()
-                    break
+        brain = create_brain(best_genome, config)
 
-            frames = np.swapaxes(np.swapaxes(np.array(frames), 1, 3), 2, 3)
+        # if self.generation % 10 == 0:
+        #     env = gym.make('CartPole-v1')
+        #
+        #     fitness = 0.0
+        #     observation = env.reset()
+        #     observation[0] = 0
+        #     observation[2] = 0
+        #     frames = []
+        #     for _ in range(500):
+        #         for ___ in range(20):
+        #             action = int(clamp(brain.step(observation)[0], 0, 1))
+        #         observation, reward, done, info = env.step(action)
+        #         observation[0] = 0
+        #         observation[2] = 0
+        #         fitness += reward
+        #         frames.append(env.render("rgb_array"))
+        #         if done:
+        #             observation = env.reset()
+        #             break
+        #
+        #     frames = np.swapaxes(np.swapaxes(np.array(frames), 1, 3), 2, 3)
+        #
+        #     env.close()
+        #
+        brain.plot()
 
-            env.close()
+        wandb.log({"best_fitness": best_genome.fitness,
+                   "average_fitness": fit_mean,
+                   })
 
-            brain.plot()
-
-            wandb.log({"best_fitness": best_genome.fitness,
-                       "average_fitness": fit_mean,
-                       "video": wandb.Video(frames, fps=50, format="mp4")
-                       })
-
-
-
-            with open("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl",
-                      "wb") as f:
-                dill.dump(best_genome, f)
-            wandb.log_artifact("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl",
-                               name=wandb.run.name, type="model")
+        with open("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl",
+                  "wb") as f:
+            dill.dump(best_genome, f)
+        wandb.log_artifact("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl",
+                           name=wandb.run.name, type="model")
 
     def complete_extinction(self):
         self.num_extinctions += 1
@@ -160,7 +160,7 @@ def run(config_file):
 
     # Run for up to 300 generations.
     pe = GenomeEvaluator.ParallelEvaluator(multiprocessing.cpu_count(), eval_function)
-    winner = p.run(pe.eval_genomes, 1000)
+    winner = p.run(pe.eval_genomes, 300)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
@@ -195,25 +195,31 @@ def param_tuning(config_path):
 
 
 def eval_function(genome, config):
-    env = gym.make('CartPole-v1')
     brain = create_brain(genome, config)
-    fitness = 0.0
-    observation = env.reset()
-    observation[0] = 0
-    observation[2] = 0
-    for __ in range(1):
-        for _ in range(500):
-            for ___ in range(20):
-                action = int(clamp(brain.step(observation)[0], 0, 1))
-            observation, reward, done, info = env.step(action)
-            observation[0] = 0
-            observation[2] = 0
-            fitness += reward
+    fitness = 0
+    round_num = 0
+    pattern = []
 
-            if done:
-                observation = env.reset()
-                break
-    env.close()
+    for i in range(10):
+        done = False
+        while not done:
+            round_num += 1
+            for s in pattern:
+                brain.step([s])
+
+            s = random.randint(1, 4)
+            brain.step([s])
+            pattern.append(s)
+
+            for s in pattern:
+                out = brain.step([0])
+                if clamp(out[0], 0, 4) == s:
+                    fitness += 1
+                else:
+                    done = True
+                    break
+
+    fitness = fitness/10
 
     return fitness
 

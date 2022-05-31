@@ -28,17 +28,18 @@ class Brain:
         axon.h_id = len(self.axons)
         self.axons.append(axon)
 
-    def step(self, input_array):
-        # print(input_array)
-        output_array = []
+    def step(self, input_array, propagations_per_step=12):
+        for i in range(propagations_per_step):
+            # print(input_array)
+            output_array = []
 
-        for neuron in self.neurons:
-            output_array.append(neuron.step(input_array))
+            for neuron in self.neurons:
+                output_array.append(neuron.step(input_array))
+    
+            output_array = list(np.asarray(output_array).sum(axis=0))
 
-        output_array = list(np.asarray(output_array).sum(axis=0))
-
-        for axon in self.axons:
-            axon.propagate()
+            for axon in self.axons:
+                axon.propagate()
 
         return output_array
 
@@ -72,7 +73,7 @@ class Brain:
                 'axon_label': 'Weight: {:.2f}, Potential: {:.2f}'.format(axon.weight, axon.activation_potential)}))
         G.add_edges_from(edges)
         discluded_nodes = []
-        included_nodes = list(nx.ancestors(G, output_id)) + list(nx.descendants(G, output_id))
+        included_nodes = list(nx.ancestors(G, output_id))
         for node in G.nodes:
             if node not in included_nodes and node is not output_id:
                 discluded_nodes.append(node)

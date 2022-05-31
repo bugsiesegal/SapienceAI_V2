@@ -2,7 +2,7 @@
 fitness_criterion = max
 fitness_threshold = 5000.0
 pop_size = 500
-reset_on_extinction = False
+reset_on_extinction = True
 
 [BrainGenome]
 neuron_type_default = 0
@@ -28,15 +28,15 @@ activation_potential_min_value = -10.0
 activation_potential_mutate_power = 0.1
 activation_potential_mutate_rate = 0.2
 activation_potential_replace_rate = 0.2
-compatibility_disjoint_coefficient = 1.5
-compatibility_weight_coefficient = 0.25
+compatibility_disjoint_coefficient = 0.5
+compatibility_weight_coefficient = 0.05
 axon_add_prob = 0.2
 axon_delete_prob = 0.2
 enabled_default = True
 enabled_mutate_rate = 0.2
 neuron_add_prob = 0.2
 neuron_delete_prob = 0.2
-num_inputs = 4
+num_inputs = 1
 num_outputs = 1
 
 [DefaultSpeciesSet]
@@ -44,10 +44,11 @@ compatibility_threshold = 2.0
 
 [DefaultStagnation]
 species_fitness_func = max
-max_stagnation = 15
+max_stagnation = 30
 species_elitism = 1
 
 [DefaultReproduction]
 elitism = 1
-survival_threshold = 0.15
+survival_threshold = 0.2
+min_species_size = 20
 

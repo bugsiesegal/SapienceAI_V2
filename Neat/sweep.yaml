@@ -6,7 +6,7 @@ metric:
 parameters:
   survival_threshold:
     min: 0.01
-    max: 0.45
+    max: 0.6
   compatibility_threshold:
     min: 2.0
     max: 10.0
@@ -15,4 +15,4 @@ parameters:
     max: 2.0
   compatibility_weight_coefficient:
     min: 0.001
-    max: 1.5
+    max: 2.0
