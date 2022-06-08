@@ -12,6 +12,8 @@ import pandas as pd
 from NPNN.axon import Axon
 from NPNN.neuron import Neuron
 
+import matplotlib as mpl
+
 import wandb
 
 
@@ -28,14 +30,18 @@ class Brain:
         axon.h_id = len(self.axons)
         self.axons.append(axon)
 
-    def step(self, input_array, propagations_per_step=12):
+    def step(self, input_array, propagations_per_step=6):
+        state = []
         for i in range(propagations_per_step):
             # print(input_array)
             output_array = []
 
+            for axon in self.axons:
+                axon.check_activation()
+
             for neuron in self.neurons:
                 output_array.append(neuron.step(input_array))
-    
+
             output_array = list(np.asarray(output_array).sum(axis=0))
 
             for axon in self.axons:
@@ -43,62 +49,38 @@ class Brain:
 
         return output_array
 
-    def to_df(self) -> pandas.DataFrame:
-        df = pd.DataFrame(columns=["Input", "Output", "InpNeuron", "OutNeuron", "Weight", "Activation Potential"])
-
-        for axon in self.axons:
-            df.loc[len(df.index)] = [axon.input_neuron, axon.output_neuron,
-                                     axon.input_neuron.neuron_type, axon.output_neuron.neuron_type, axon.weight,
-                                     axon.activation_potential]
-        return df
-
-    def plot(self):
+    def make_graph(self):
         G = nx.DiGraph()
+        neuron_to_id = {}
 
-        nodes = []
-        output_id = None
-        for neuron in self.neurons:
-            if neuron.neuron_type == 2:
-                nodes.append((neuron.h_id, {"color": "green", "label": "Output: " + str(neuron.h_id)}))
-                output_id = neuron.h_id
-            elif neuron.neuron_type == 1:
-                nodes.append((neuron.h_id, {"color": "red", "label": "Input: " + str(neuron.h_id)}))
-            else:
-                nodes.append((neuron.h_id, {"color": "blue", "label": str(neuron.h_id)}))
-        G.add_nodes_from(nodes)
+        for node in range(len(self.neurons)):
+            neuron_to_id[self.neurons[node]] = node
+            G.add_node(node, energy=self.neurons[node].energy, neuron_type=self.neurons[node].neuron_type)
 
-        edges = []
-        for axon in self.axons:
-            edges.append((axon.input_neuron.h_id, axon.output_neuron.h_id, {
-                'axon_label': 'Weight: {:.2f}, Potential: {:.2f}'.format(axon.weight, axon.activation_potential)}))
-        G.add_edges_from(edges)
-        discluded_nodes = []
-        included_nodes = list(nx.ancestors(G, output_id))
-        for node in G.nodes:
-            if node not in included_nodes and node is not output_id:
-                discluded_nodes.append(node)
+        for edge in self.axons:
+            G.add_edge(neuron_to_id[edge.input_neuron], neuron_to_id[edge.output_neuron],
+                       activation_potential=edge.activation_potential,
+                       axon_weight=edge.weight)
 
-        G.remove_nodes_from(discluded_nodes)
-        pos = nx.spring_layout(G, iterations=200)
-        nx.draw(G, pos)
-        node_labels = nx.get_node_attributes(G, 'label')
-        edge_labels = nx.get_edge_attributes(G, 'axon_label')
-        nx.draw_networkx_labels(G, pos, labels=node_labels, font_size=4)
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=4)
+        self.pos = nx.spring_layout(G)
 
-        plt.savefig("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Model_Images\\brain-structure.png", dpi=400)
-        plt.clf()
-        plt.cla()
+        self.G = G
 
-        cycles = nx.recursive_simple_cycles(G)
-        n_cycles = len(cycles)
-        wandb.log(
-            {
-                "brain structure": wandb.Image(
-                    "C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Model_Images\\brain-structure.png"),
-                "cycles": n_cycles
-            }, commit=False
-        )
+    def plot(self, i):
+        node_energies = [i.energy for i in self.neurons]
+        cmap = plt.cm.plasma
+
+        nodes = nx.draw_networkx_nodes(self.G, pos=self.pos, node_color=node_energies, cmap=cmap)
+        edges = nx.draw_networkx_edges(self.G, pos=self.pos, arrowstyle="->")
+
+        nx.draw_networkx_labels(self.G, pos=self.pos, labels=nx.get_node_attributes(self.G, "neuron_type"))
+
+        plt.colorbar(nodes)
+
+        ax = plt.gca()
+        ax.set_axis_off()
+        plt.savefig("figures/%s.svg" % i)
+        plt.show()
 
 
 def create_brain(genome, config) -> Brain:

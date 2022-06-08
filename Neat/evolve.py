@@ -92,34 +92,10 @@ class WandbStdOutReporter(BaseReporter):
 
         brain = create_brain(best_genome, config)
 
-        # if self.generation % 10 == 0:
-        #     env = gym.make('CartPole-v1')
-        #
-        #     fitness = 0.0
-        #     observation = env.reset()
-        #     observation[0] = 0
-        #     observation[2] = 0
-        #     frames = []
-        #     for _ in range(500):
-        #         for ___ in range(20):
-        #             action = int(clamp(brain.step(observation)[0], 0, 1))
-        #         observation, reward, done, info = env.step(action)
-        #         observation[0] = 0
-        #         observation[2] = 0
-        #         fitness += reward
-        #         frames.append(env.render("rgb_array"))
-        #         if done:
-        #             observation = env.reset()
-        #             break
-        #
-        #     frames = np.swapaxes(np.swapaxes(np.array(frames), 1, 3), 2, 3)
-        #
-        #     env.close()
-        #
-        brain.plot()
+        fitness_function(brain, iterations=1, plot=True)
 
         wandb.log({"best_fitness": best_genome.fitness,
-                   "average_fitness": fit_mean,
+                   "average_fitness": fit_mean
                    })
 
         with open("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl",
@@ -160,7 +136,7 @@ def run(config_file):
 
     # Run for up to 300 generations.
     pe = GenomeEvaluator.ParallelEvaluator(multiprocessing.cpu_count(), eval_function)
-    winner = p.run(pe.eval_genomes, 300)
+    winner = p.run(pe.eval_genomes, 10)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
@@ -181,7 +157,7 @@ def param_tuning(config_path):
         for key in configparse[section]:
             config_dict[key] = configparse[section][key]
 
-    wandb.init(project="SapienceAI_V2-Neat", entity="bugsiesegal", config=config_dict)
+    wandb.init(project="SapienceAI_V2.1-Neat", entity="bugsiesegal", config=config_dict)
 
     config_dict = wandb.config
 
@@ -196,38 +172,55 @@ def param_tuning(config_path):
 
 def eval_function(genome, config):
     brain = create_brain(genome, config)
+
+    fitness = fitness_function(brain)
+
+    return fitness
+
+
+def fitness_function(brain, iterations=10, plot=False):
     fitness = 0
     round_num = 0
     pattern = []
+    i = 0
 
-    for i in range(10):
+    if plot:
+        brain.make_graph()
+
+    for i in range(iterations):
         done = False
         while not done:
             round_num += 1
             for s in pattern:
                 brain.step([s])
+                if plot:
+                    i += 1
+                    brain.plot(i)
 
             s = random.randint(1, 4)
             brain.step([s])
+            if plot:
+                i += 1
+                brain.plot(i)
             pattern.append(s)
 
             for s in pattern:
                 out = brain.step([0])
+                if plot:
+                    i += 1
+                    brain.plot(i)
                 if clamp(out[0], 0, 4) == s:
                     fitness += 1
                 else:
                     done = True
                     break
 
-    fitness = fitness/10
+    fitness = fitness / iterations
 
     return fitness
 
 
 if __name__ == '__main__':
-    disp = Display()
-
-    disp.start()
     # Determine path to configuration file. This path manipulation is
     # here so that the script will run successfully regardless of the
     # current working directory.
@@ -238,5 +231,3 @@ if __name__ == '__main__':
     param_tuning(config_path)
 
     run(config_path)
-
-    disp.stop()
