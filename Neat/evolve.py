@@ -3,6 +3,8 @@ import multiprocessing
 import os
 import random
 import time
+
+from matplotlib import animation
 from pyvirtualdisplay import Display
 import dill
 import gym
@@ -92,16 +94,28 @@ class WandbStdOutReporter(BaseReporter):
 
         brain = create_brain(best_genome, config)
 
-        fitness_function(brain, iterations=1, plot=True)
+        fig, ax = plt.subplots()
+
+        fitness, plots = fitness_function(brain, iterations=1, plot=True)
+        plt.cla()
+        plt.colorbar(brain.nodes)
+
+        ims = [[ax.imshow(plot)] for plot in plots]
+
+        ani = animation.ArtistAnimation(fig, ims, interval=200, blit=True,
+                                        repeat_delay=1000)
+
+        ani.save("animation.gif", dpi=400)
 
         wandb.log({"best_fitness": best_genome.fitness,
-                   "average_fitness": fit_mean
+                   "average_fitness": fit_mean,
+                   "animation": wandb.Video("animation.gif")
                    })
 
-        with open("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl",
+        with open(os.getcwd() + "\\Models\\" + wandb.run.name + ".pkl",
                   "wb") as f:
             dill.dump(best_genome, f)
-        wandb.log_artifact("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl",
+        wandb.log_artifact(os.getcwd() + "\\Models\\" + wandb.run.name + ".pkl",
                            name=wandb.run.name, type="model")
 
     def complete_extinction(self):
@@ -136,15 +150,15 @@ def run(config_file):
 
     # Run for up to 300 generations.
     pe = GenomeEvaluator.ParallelEvaluator(multiprocessing.cpu_count(), eval_function)
-    winner = p.run(pe.eval_genomes, 10)
+    winner = p.run(pe.eval_genomes, 100)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
     winner_brain = create_brain(winner, config)
 
-    with open("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl", "wb") as f:
+    with open("C:\\Users\\bugsi\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl", "wb") as f:
         dill.dump(winner, f)
-    wandb.log_artifact("C:\\Users\\Jake\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl",
+    wandb.log_artifact("C:\\Users\\bugsi\\PycharmProjects\\SapienceAI_V2\\Neat\\Models\\" + wandb.run.name + ".pkl",
                        name=wandb.run.name, type="model")
 
 
@@ -193,22 +207,13 @@ def fitness_function(brain, iterations=10, plot=False):
             round_num += 1
             for s in pattern:
                 brain.step([s])
-                if plot:
-                    i += 1
-                    brain.plot(i)
 
             s = random.randint(1, 4)
             brain.step([s])
-            if plot:
-                i += 1
-                brain.plot(i)
             pattern.append(s)
 
             for s in pattern:
                 out = brain.step([0])
-                if plot:
-                    i += 1
-                    brain.plot(i)
                 if clamp(out[0], 0, 4) == s:
                     fitness += 1
                 else:
@@ -216,6 +221,9 @@ def fitness_function(brain, iterations=10, plot=False):
                     break
 
     fitness = fitness / iterations
+
+    if plot:
+        return fitness, brain.plots
 
     return fitness
 
