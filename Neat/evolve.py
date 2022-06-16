@@ -91,32 +91,32 @@ class WandbStdOutReporter(BaseReporter):
                                                                                  best_genome.size(),
                                                                                  best_species_id,
                                                                                  best_genome.key))
+        if self.generation % 10 == 0:
+            brain = create_brain(best_genome, config)
 
-        brain = create_brain(best_genome, config)
+            fig, ax = plt.subplots()
 
-        fig, ax = plt.subplots()
+            fitness, plots = fitness_function(brain, iterations=1, plot=True)
+            plt.cla()
+            plt.colorbar(brain.nodes)
 
-        fitness, plots = fitness_function(brain, iterations=1, plot=True)
-        plt.cla()
-        plt.colorbar(brain.nodes)
+            ims = [[ax.imshow(plot)] for plot in plots]
 
-        ims = [[ax.imshow(plot)] for plot in plots]
+            ani = animation.ArtistAnimation(fig, ims, interval=300, blit=True,
+                                            repeat_delay=1000)
 
-        ani = animation.ArtistAnimation(fig, ims, interval=200, blit=True,
-                                        repeat_delay=1000)
+            ani.save("animation.gif", dpi=400)
 
-        ani.save("animation.gif", dpi=400)
+            wandb.log({"best_fitness": best_genome.fitness,
+                       "average_fitness": fit_mean,
+                       "animation": wandb.Video("animation.gif")
+                       })
 
-        wandb.log({"best_fitness": best_genome.fitness,
-                   "average_fitness": fit_mean,
-                   "animation": wandb.Video("animation.gif")
-                   })
-
-        with open(os.getcwd() + "\\Models\\" + wandb.run.name + ".pkl",
-                  "wb") as f:
-            dill.dump(best_genome, f)
-        wandb.log_artifact(os.getcwd() + "\\Models\\" + wandb.run.name + ".pkl",
-                           name=wandb.run.name, type="model")
+            with open(os.getcwd() + "\\Models\\" + wandb.run.name + ".pkl",
+                      "wb") as f:
+                dill.dump(best_genome, f)
+            wandb.log_artifact(os.getcwd() + "\\Models\\" + wandb.run.name + ".pkl",
+                               name=wandb.run.name, type="model")
 
     def complete_extinction(self):
         self.num_extinctions += 1
@@ -150,7 +150,7 @@ def run(config_file):
 
     # Run for up to 300 generations.
     pe = GenomeEvaluator.ParallelEvaluator(multiprocessing.cpu_count(), eval_function)
-    winner = p.run(pe.eval_genomes, 100)
+    winner = p.run(pe.eval_genomes, 1000000)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
