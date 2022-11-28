@@ -11,6 +11,7 @@ import pandas as pd
 
 from NPNN.axon import Axon
 from NPNN.neuron import Neuron
+from NPNN.Numpy_Based import Network
 
 import matplotlib as mpl
 
@@ -99,6 +100,34 @@ class Brain:
         data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
 
         return data
+
+    def to_network(self) -> Network.Brain:
+        num_inputs = 0
+        num_outputs = 0
+
+        h_id_to_pos = {}
+
+        for i, neuron in enumerate(self.neurons):
+            if neuron.neuron_type == 2:
+                num_outputs += 1
+            elif neuron.neuron_type == 1:
+                num_inputs += 1
+
+            h_id_to_pos[neuron.h_id] = i
+
+        network = Network.Brain(len(self.neurons) - (num_inputs + num_outputs), num_inputs, num_outputs)
+
+        weights = np.zeros((2, len(self.neurons), len(self.neurons)))
+
+        for axon in self.axons:
+            weights[0, h_id_to_pos[axon.input_neuron.h_id], h_id_to_pos[axon.output_neuron.h_id]]\
+                = axon.activation_potential
+            weights[1, h_id_to_pos[axon.input_neuron.h_id], h_id_to_pos[axon.output_neuron.h_id]] \
+                = axon.weight
+
+        network.from_array(weights)
+
+        return network
 
 
 def create_brain(genome, config) -> Brain:

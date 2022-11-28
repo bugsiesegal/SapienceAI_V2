@@ -5,7 +5,7 @@ import random
 import time
 
 from matplotlib import animation
-from pyvirtualdisplay import Display
+
 import dill
 import gym
 import matplotlib.pyplot as plt
@@ -92,25 +92,33 @@ class WandbStdOutReporter(BaseReporter):
                                                                                  best_species_id,
                                                                                  best_genome.key))
         if self.generation % 10 == 0:
-            brain = create_brain(best_genome, config)
+            env = gym.make("Ant-v3")
+            brain_obj = create_brain(best_genome, config)
+            brain = brain_obj.to_network()
+            fitness = 0.0
+            observation = env.reset()
+            frames = []
+            for _ in range(1000):
+                for __ in range(10):
+                    action = brain.step(observation[:27])
+                observation, reward, done, info = env.step(action)
+                fitness += reward
+                frames.append(env.render("rgb_array"))
+                if done:
+                    observation = env.reset()
+                    break
 
-            fig, ax = plt.subplots()
+            frames = np.swapaxes(np.swapaxes(np.array(frames), 1, 3), 2, 3)
 
-            fitness, plots = fitness_function(brain, iterations=1, plot=True)
-            plt.cla()
-            plt.colorbar(brain.nodes)
-
-            ims = [[ax.imshow(plot)] for plot in plots]
-
-            ani = animation.ArtistAnimation(fig, ims, interval=300, blit=True,
-                                            repeat_delay=1000)
-
-            ani.save("animation.gif", dpi=400)
-
+            env.close()
             wandb.log({"best_fitness": best_genome.fitness,
                        "average_fitness": fit_mean,
-                       "animation": wandb.Video("animation.gif")
+                       "video": wandb.Video(frames, fps=30, format="mp4")
                        })
+
+            brain_obj.make_graph()
+
+            brain_obj.plot()
 
             with open(os.getcwd() + "\\Models\\" + wandb.run.name + ".pkl",
                       "wb") as f:
@@ -149,8 +157,8 @@ def run(config_file):
     p.add_reporter(stats)
 
     # Run for up to 300 generations.
-    pe = GenomeEvaluator.ParallelEvaluator(multiprocessing.cpu_count(), eval_function)
-    winner = p.run(pe.eval_genomes, 1000000)
+    pe = GenomeEvaluator.ParallelEvaluator(multiprocessing.cpu_count())
+    winner = p.run(pe.eval_genomes, 2)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
@@ -182,50 +190,6 @@ def param_tuning(config_path):
 
     with open(config_path, "w") as config_file:
         configparse.write(config_file)
-
-
-def eval_function(genome, config):
-    brain = create_brain(genome, config)
-
-    fitness = fitness_function(brain)
-
-    return fitness
-
-
-def fitness_function(brain, iterations=10, plot=False):
-    fitness = 0
-    round_num = 0
-    pattern = []
-    i = 0
-
-    if plot:
-        brain.make_graph()
-
-    for i in range(iterations):
-        done = False
-        while not done:
-            round_num += 1
-            for s in pattern:
-                brain.step([s])
-
-            s = random.randint(1, 4)
-            brain.step([s])
-            pattern.append(s)
-
-            for s in pattern:
-                out = brain.step([0])
-                if clamp(out[0], 0, 4) == s:
-                    fitness += 1
-                else:
-                    done = True
-                    break
-
-    fitness = fitness / iterations
-
-    if plot:
-        return fitness, brain.plots
-
-    return fitness
 
 
 if __name__ == '__main__':

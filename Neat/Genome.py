@@ -1,5 +1,5 @@
 from itertools import product
-from random import random, choice
+from random import random, choice, gauss
 
 from neat.config import ConfigParameter, write_pretty_params
 from neat.six_util import iteritems, iterkeys
@@ -52,7 +52,11 @@ class BrainGenome:
 
         self.fitness = None
 
+        self.discount = None
+
     def mutate(self, config):
+        self.discount += gauss(0.0, 0.05)
+        self.discount = max(0.01, min(0.99, self.discount))
         if random() < config.neuron_add_prob:
             self.mutate_add_neuron(config)
 
@@ -86,6 +90,8 @@ class BrainGenome:
 
         parent1_set = parent1.neurons
         parent2_set = parent2.neurons
+
+        self.discount = choice((genome1.discount, genome2.discount))
 
         for key, ng1 in iteritems(parent1_set):
             ng2 = parent2_set.get(key)
@@ -182,6 +188,8 @@ class BrainGenome:
             neuron_distance = (
                                       neuron_distance + config.compatibility_disjoint_coefficient * disjoint_neurons) / max_neurons
 
+        disc_diff = abs(self.discount - other.discount)
+
         axon_distance = 0.0
         if self.axons or other.axons:
             disjoint_axons = 0
@@ -203,7 +211,7 @@ class BrainGenome:
 
         distance = neuron_distance + axon_distance
 
-        return distance
+        return distance + disc_diff
 
     def size(self):
         """Returns genome 'complexity', taken to be (number of neurons, number of enabled axons)"""
@@ -229,6 +237,8 @@ class BrainGenome:
             self.neurons[neuron_key] = neuron
 
     def configure_new(self, config):
+        self.discount = 0.01 + 0.98 * random()
+
         for input_neuron_key in config.input_keys:
             self.neurons[input_neuron_key] = NeuronGene(key=0)
             self.neurons[input_neuron_key].init_attributes(config)
