@@ -5,9 +5,8 @@ import random
 import time
 
 from matplotlib import animation
-from pyvirtualdisplay import Display
 import dill
-import gym
+# import gym
 import matplotlib.pyplot as plt
 import neat
 import networkx as nx
@@ -117,6 +116,10 @@ class WandbStdOutReporter(BaseReporter):
                 dill.dump(best_genome, f)
             wandb.log_artifact(os.getcwd() + "\\Models\\" + wandb.run.name + ".pkl",
                                name=wandb.run.name, type="model")
+        else:
+            wandb.log({"best_fitness": best_genome.fitness,
+                       "average_fitness": fit_mean
+                       })
 
     def complete_extinction(self):
         self.num_extinctions += 1
@@ -150,7 +153,7 @@ def run(config_file):
 
     # Run for up to 300 generations.
     pe = GenomeEvaluator.ParallelEvaluator(multiprocessing.cpu_count(), eval_function)
-    winner = p.run(pe.eval_genomes, 1000000)
+    winner = p.run(pe.eval_genomes, 1000)
 
     # Display the winning genome.
     print('\nBest genome:\n{!s}'.format(winner))
@@ -208,13 +211,13 @@ def fitness_function(brain, iterations=10, plot=False):
             for s in pattern:
                 brain.step([s])
 
-            s = random.randint(1, 4)
+            s = random.randint(1, 2)
             brain.step([s])
             pattern.append(s)
 
             for s in pattern:
                 out = brain.step([0])
-                if clamp(out[0], 0, 4) == s:
+                if clamp(out[0], 0, 2) == s:
                     fitness += 1
                 else:
                     done = True

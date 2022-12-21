@@ -33,7 +33,7 @@ class Brain:
         axon.h_id = len(self.axons)
         self.axons.append(axon)
 
-    def step(self, input_array, propagations_per_step=6):
+    def step(self, input_array, propagations_per_step=10):
         state = []
         for i in range(propagations_per_step):
             self.steps += 1
@@ -112,6 +112,6 @@ def create_brain(genome, config) -> Brain:
 
     for key, a in iteritems(genome.axons):
         if a.enabled:
-            brain.add_axon(Axon(neurons[a.key[0]], neurons[a.key[1]], a.activation_potential, a.weight))
+            brain.add_axon(Axon(neurons[a.key[0]], neurons[a.key[1]], a.activation_potential, a.weight, round(a.time_delay)))
 
     return brain

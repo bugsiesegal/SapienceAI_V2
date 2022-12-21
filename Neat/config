@@ -1,5 +1,5 @@
 [NEAT]
-fitness_criterion = max
+fitness_criterion = mean
 fitness_threshold = 5000.0
 pop_size = 500
 reset_on_extinction = True
@@ -28,8 +28,15 @@ activation_potential_min_value = -10.0
 activation_potential_mutate_power = 0.1
 activation_potential_mutate_rate = 0.2
 activation_potential_replace_rate = 0.2
-compatibility_disjoint_coefficient = 1.5
-compatibility_weight_coefficient = 0.1
+time_delay_init_mean = 1.0
+time_delay_init_stdev = 1.0
+time_delay_max_value = 100.0
+time_delay_min_value = 1.0
+time_delay_mutate_power = 0.1
+time_delay_mutate_rate = 0.2
+time_delay_replace_rate = 0.2
+compatibility_disjoint_coefficient = 0.4928154857410462
+compatibility_weight_coefficient = 0.9275179784781202
 axon_add_prob = 0.2
 axon_delete_prob = 0.2
 enabled_default = True
@@ -40,14 +47,14 @@ num_inputs = 1
 num_outputs = 1
 
 [DefaultSpeciesSet]
-compatibility_threshold = 2.0
+compatibility_threshold = 8.691288579089024
 
 [DefaultStagnation]
 species_fitness_func = max
 max_stagnation = 15
-species_elitism = 0
+species_elitism = 1
 
 [DefaultReproduction]
-elitism = 0
-survival_threshold = 0.4
+elitism = 1
+survival_threshold = 0.3355743811307668
 

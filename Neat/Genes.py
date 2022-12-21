@@ -32,7 +32,9 @@ class AxonGene(BaseGene):
     __gene_attributes__ = [
         FloatAttribute('weight'),
         FloatAttribute('activation_potential'),
-        BoolAttribute('enabled')
+        FloatAttribute('time_delay'),
+        BoolAttribute('enabled'),
+
     ]
 
     def distance(self, other, config):
